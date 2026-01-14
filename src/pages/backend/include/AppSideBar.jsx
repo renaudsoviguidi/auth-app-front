@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, FileText, LayoutDashboard, LogOut, Settings, Shield, Users, X } from 'lucide-react';
+import { Activity, FileText, LayoutDashboard, LogOut, Settings, Shield, Users, XCircle } from 'lucide-react';
 import { myroutes } from '../../../routes/routes';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,10 +21,10 @@ const AppSideBar = ({ sidebarOpen, setSidebarOpen }) => {
     const menuItems = [
         { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard, path: myroutes.dashboard },
         { id: 'users', label: 'Utilisateurs', icon: Users, path: myroutes.index_users },
-        { id: 'roles', label: 'Rôles & Permissions', icon: Shield, path: "/admin/roles/index" },
-        { id: 'activity', label: 'Activité', icon: Activity, path: "/admin/roles/index" },
-        { id: 'reports', label: 'Rapports', icon: FileText, path: "/admin/roles/index" },
-        { id: 'settings', label: 'Paramètres', icon: Settings, path: "/admin/roles/index" }
+        { id: 'roles', label: 'Rôles & Permissions', icon: Shield, path: myroutes.index_roles },
+        { id: 'activity', label: 'Activité', icon: Activity, path: "/admin/roles/indexx" },
+        { id: 'reports', label: 'Rapports', icon: FileText, path: "/admin/roles/indexy" },
+        { id: 'settings', label: 'Paramètres', icon: Settings, path: "/admin/roles/indexz" }
     ];
 
     const user = {
@@ -64,7 +64,7 @@ const AppSideBar = ({ sidebarOpen, setSidebarOpen }) => {
                     onClick={() => setSidebarOpen(false)}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
                 >
-                    <X className="w-5 h-5" />
+                    <XCircle className="w-5 h-5" />
                 </button>
                 </div>
 

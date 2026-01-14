@@ -10,6 +10,7 @@ import ForgotPasswordPage from '../pages/auth/password/forgotPasswordPage';
 import ForgotPasswordCodeOtpPage from '../pages/auth/password/ForgotPasswordCodeOtpPage';
 import ResetPasswordPage from '../pages/auth/password/ResetPasswordPage';
 import UsersPage from '../pages/backend/users';
+import RolesPage from '../pages/backend/roles';
 
 const Webroute = () => {
   return (
@@ -29,6 +30,7 @@ const Webroute = () => {
         {/* Administration */}
         <Route path={myroutes.dashboard} name="dashboard" element={<DashboardPage />} />
         <Route path={myroutes.index_users} name="index_users" element={<UsersPage />} />
+        <Route path={myroutes.index_roles} name="index_roles" element={<RolesPage />} />
         {/* End Administration */}
     </Routes>
    </BrowserRouter>

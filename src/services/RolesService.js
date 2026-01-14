@@ -30,6 +30,13 @@ class RolesService {
           headers: { Authorization: `Bearer ${token}` },
         });
     }
+
+    stats_roles(token) {
+        return http.get("/api/v01/web/settings/roles/stats", {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    }
+
 }
 
 export default new RolesService

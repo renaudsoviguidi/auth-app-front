@@ -44,7 +44,7 @@ const UsersPage = () => {
       setLoadingStats(true);
       const response = await UsersService.count(token);
   
-      if (response.data.success ) {
+      if (response.data.success) {
         setStats(response.data.data); 
       }
     } catch (error) {
@@ -94,11 +94,10 @@ const UsersPage = () => {
       navigate(myroutes.login);
     }
 
-    if (token) {
-      fetchStats();
-      fetchRoles();
-      fetchUsers();
-    }
+    fetchStats();
+    fetchRoles();
+    fetchUsers();
+    
   }, [dispatch, isAuthenticated, navigate, token]);
 
   // Filtrer les utilisateurs
@@ -796,28 +795,39 @@ const UsersPage = () => {
   const getFullName = (user) => `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Utilisateur';
 
   /// - Supression d'un élément
+
   const onDelete = (ref) => {
-    //confirm action
-    dangerToast("Voulez-vous vraiment supprimer cet élément ?").then(
-      (result) => {
-        if (result.isConfirmed) {
-          UsersService.delete(ref, token)
-            .then((response) => {
-              if (response.data.success) {
-                successToast(response.data.message);
-              } else {
-                errorToast(response.data.message);
+    dangerToast("Voulez-vous vraiment supprimer cet élément ?").then((result) => {
+      if (result.isConfirmed) {
+        UsersService.delete(ref, token)
+          .then((response) => {
+            successToast(response.data.message);
+            fetchUsers();
+          })
+          .catch((err) => {
+            let errorMessage;
+  
+            if (err.response) {
+              const status = err.response.status;
+  
+              if (status === 204) {
+                successToast("Utilisateur supprimé avec succès!!");
                 fetchUsers();
+                return;
               }
-            })
-            .catch((err) => {
-              const errorMessage = err.response?.data?.message || err.response?.data?.error || "Erreur lors de la supression";
-              errorToast(errorMessage);
-              setError(errorMessage);
-            });
-        }
+  
+              errorMessage =
+                err.response.data?.message ||
+                err.response.data?.error ||
+                `Erreur ${status}`;
+            } else {
+              errorMessage = err.message || "Erreur réseau";
+            }
+  
+            errorToast(errorMessage);
+          });
       }
-    );
+    });
   };
 
 
