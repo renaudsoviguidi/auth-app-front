@@ -12,5 +12,6 @@ export const myroutes = {
   /// - Administrattion
   dashboard: "/admin/dashboard",
   index_users: "/admin/users/index",
-  index_roles: "/admin/roles/index"
+  index_roles: "/admin/roles/index",
+  index_habilitations: "/admin/habilitations/index",
 };

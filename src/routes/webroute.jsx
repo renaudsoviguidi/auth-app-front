@@ -11,6 +11,7 @@ import ForgotPasswordCodeOtpPage from '../pages/auth/password/ForgotPasswordCode
 import ResetPasswordPage from '../pages/auth/password/ResetPasswordPage';
 import UsersPage from '../pages/backend/users';
 import RolesPage from '../pages/backend/roles';
+import HabilitationsPage from '../pages/backend/habilitations';
 
 const Webroute = () => {
   return (
@@ -31,6 +32,7 @@ const Webroute = () => {
         <Route path={myroutes.dashboard} name="dashboard" element={<DashboardPage />} />
         <Route path={myroutes.index_users} name="index_users" element={<UsersPage />} />
         <Route path={myroutes.index_roles} name="index_roles" element={<RolesPage />} />
+        <Route path={myroutes.index_habilitations} name="index_habilitations" element={<HabilitationsPage />} />
         {/* End Administration */}
     </Routes>
    </BrowserRouter>

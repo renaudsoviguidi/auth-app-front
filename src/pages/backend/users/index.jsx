@@ -97,8 +97,8 @@ const UsersPage = () => {
     fetchStats();
     fetchRoles();
     fetchUsers();
-    
-  }, [dispatch, isAuthenticated, navigate, token]);
+
+  }, [dispatch, isAuthenticated, navigate]);
 
   // Filtrer les utilisateurs
   const filteredUsers = users.filter(user => {
