@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Users, Plus, Search, Filter, MoreVertical, Edit2, Trash2, Mail, Phone, Calendar, Shield, X, Eye, EyeOff, AlertCircle, UserPlus, TrendingDown, Loader2, ArrowRightIcon, CheckCircle } from 'lucide-react';
+import { Users, Plus, Search, Filter, MoreVertical, Edit2, Trash2, Mail, TrendingUp, Calendar, Shield, X, Eye, EyeOff, AlertCircle, UserPlus, TrendingDown, Loader2, ArrowRightIcon, CheckCircle } from 'lucide-react';
 import AppLayout from '../include/AppLayout';
 import UsersService from '../../../services/UsersService';
 import { useDispatch, useSelector } from 'react-redux';

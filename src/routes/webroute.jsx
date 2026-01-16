@@ -12,6 +12,9 @@ import ResetPasswordPage from '../pages/auth/password/ResetPasswordPage';
 import UsersPage from '../pages/backend/users';
 import RolesPage from '../pages/backend/roles';
 import HabilitationsPage from '../pages/backend/habilitations';
+import ActivityPage from '../pages/backend/activity';
+import RapportsPage from '../pages/backend/rapports';
+import SettingsPage from '../pages/backend/settings';
 
 const Webroute = () => {
   return (
@@ -33,6 +36,9 @@ const Webroute = () => {
         <Route path={myroutes.index_users} name="index_users" element={<UsersPage />} />
         <Route path={myroutes.index_roles} name="index_roles" element={<RolesPage />} />
         <Route path={myroutes.index_habilitations} name="index_habilitations" element={<HabilitationsPage />} />
+        <Route path={myroutes.activity} name="activity" element={<ActivityPage />} />
+        <Route path={myroutes.reports} name="reports" element={<RapportsPage />} />
+        <Route path={myroutes.settings} name="settings" element={<SettingsPage />} />
         {/* End Administration */}
     </Routes>
    </BrowserRouter>

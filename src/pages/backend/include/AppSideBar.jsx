@@ -22,9 +22,9 @@ const AppSideBar = ({ sidebarOpen, setSidebarOpen }) => {
         { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard, path: myroutes.dashboard },
         { id: 'users', label: 'Utilisateurs', icon: Users, path: myroutes.index_users },
         { id: 'roles', label: 'Rôles & Permissions', icon: Shield, path: myroutes.index_roles },
-        { id: 'activity', label: 'Activité', icon: Activity, path: myroutes.index_habilitations },
-        { id: 'reports', label: 'Rapports', icon: FileText, path: "/admin/roles/indexy" },
-        { id: 'settings', label: 'Paramètres', icon: Settings, path: "/admin/roles/indexz" }
+        { id: 'activity', label: 'Activité', icon: Activity, path: myroutes.activity },
+        { id: 'reports', label: 'Rapports', icon: FileText, path: myroutes.reports },
+        { id: 'settings', label: 'Paramètres', icon: Settings, path: myroutes.settings }
     ];
 
     const user = {
