@@ -5,36 +5,79 @@ import { Activity, Calendar, Filter, Search, Download, Clock, User, Shield, Sett
 import { checkAuthenticate } from '../../app/providers/authSlice';
 import { myroutes } from '../../routes/routes';
 import AppLayout from './include/AppLayout';
+import ActivitiesService from '../../services/ActivitiesService';
 
 const ActivityPage = () => {
+
+  const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticate);
 
-  useEffect(() => {
-    dispatch(checkAuthenticate());
-    if (!isAuthenticated) {
-      navigate(myroutes.login);
-    }
-  }, [dispatch, isAuthenticated, navigate]);
+
+  /// - Etats pour les statistiques
+  const [stats, setStats] = useState({
+    total_activities: 0,
+    connexions: 0,
+    modifications: 0,
+    suppressions: 0
+  });
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterDate, setFilterDate] = useState('today');
+  /// - Loader pour les statistiques
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const [activities, setActivities] = useState([
-    { id: 1, user: 'Marie Dubois', email: 'marie.dubois@example.com', action: 'Connexion réussie', type: 'login', timestamp: '2024-01-14 14:35:22', ip: '192.168.1.45', details: 'Authentification via mot de passe' },
-    { id: 2, user: 'Jean Martin', email: 'jean.martin@example.com', action: 'Création d\'utilisateur', type: 'create', timestamp: '2024-01-14 14:28:15', ip: '192.168.1.67', details: 'Nouvel utilisateur: sophie.laurent@example.com' },
-    { id: 3, user: 'Sophie Laurent', email: 'sophie.laurent@example.com', action: 'Modification de rôle', type: 'update', timestamp: '2024-01-14 14:15:42', ip: '192.168.1.89', details: 'Rôle modifié: Éditeur → Administrateur' },
-    { id: 4, user: 'Pierre Dupont', email: 'pierre.dupont@example.com', action: 'Suppression d\'utilisateur', type: 'delete', timestamp: '2024-01-14 13:58:30', ip: '192.168.1.23', details: 'Utilisateur supprimé: ancien.user@example.com' },
-    { id: 5, user: 'Marie Dubois', email: 'marie.dubois@example.com', action: 'Modification de permission', type: 'update', timestamp: '2024-01-14 13:45:18', ip: '192.168.1.45', details: 'Permission ajoutée: users.delete' },
-    { id: 6, user: 'Admin System', email: 'admin@example.com', action: 'Sauvegarde système', type: 'system', timestamp: '2024-01-14 13:30:00', ip: 'SYSTEM', details: 'Sauvegarde automatique effectuée' },
-    { id: 7, user: 'Jean Martin', email: 'jean.martin@example.com', action: 'Consultation de rapport', type: 'view', timestamp: '2024-01-14 13:12:45', ip: '192.168.1.67', details: 'Rapport consulté: Statistiques mensuelles' },
-    { id: 8, user: 'Sophie Laurent', email: 'sophie.laurent@example.com', action: 'Déconnexion', type: 'logout', timestamp: '2024-01-14 12:55:33', ip: '192.168.1.89', details: 'Déconnexion normale' },
-    { id: 9, user: 'Pierre Dupont', email: 'pierre.dupont@example.com', action: 'Modification de paramètres', type: 'settings', timestamp: '2024-01-14 12:40:21', ip: '192.168.1.23', details: 'Paramètres de notification mis à jour' },
-    { id: 10, user: 'Marie Dubois', email: 'marie.dubois@example.com', action: 'Exportation de données', type: 'export', timestamp: '2024-01-14 12:25:10', ip: '192.168.1.45', details: 'Export CSV: Liste des utilisateurs' },
-  ]);
+  /// - Charger les stats
+  const fetchStatistiques = async () => {
+    try {
+      /// - Charger directement les stats
+      setLoadingStats(true);
 
+      /// - Récupérer l'endpoint
+      const response = await ActivitiesService.stats(token);
+
+      if (response.data.success) {
+        setStats(response.data.data);
+      }
+    } catch (error) {
+      if (error.response) {
+        console.error("Erreur API:", error.response.status, error.response.data);
+      } else {
+        console.error("Erreur réseau ou autre:", error.message);
+      }
+    } finally {
+      setLoadingStats(false);
+    }
+  }
+
+  /// - Charger les activités avec filtres
+  const fetchActivities = async () => {
+    try {
+        setLoading(true);
+
+        const params = {
+            type: filterType !== 'all' ? filterType : undefined,
+            search: searchTerm || undefined,
+            date: filterDate !== 'all' ? filterDate : undefined,
+        };
+
+        const response = await ActivitiesService.list(params, token);
+        if (response.data.success) {
+            setActivities(response.data.data);
+        }
+
+    } catch (error) {
+        console.error("Erreur chargement activités:", error);
+    } finally {
+        setLoading(false);
+    }
+  }
+
+  const [activities, setActivities] = useState([]);
+/* 
   const activityTypes = [
     { value: 'all', label: 'Toutes les activités', icon: Activity },
     { value: 'login', label: 'Connexions', icon: LogIn },
@@ -51,8 +94,9 @@ const ActivityPage = () => {
     { value: 'week', label: 'Cette semaine' },
     { value: 'month', label: 'Ce mois' },
     { value: 'all', label: 'Tout' },
-  ];
+  ]; */
 
+  // Icônes et couleurs
   const getActivityIcon = (type) => {
     const icons = {
       login: LogIn,
@@ -83,24 +127,60 @@ const ActivityPage = () => {
     return colors[type] || 'bg-gray-100 text-gray-700';
   };
 
-  const filteredActivities = activities.filter(activity => {
+  /* const filteredActivities = activities.filter(activity => {
     const matchesSearch = activity.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          activity.details.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || activity.type === filterType;
     return matchesSearch && matchesType;
-  });
+  }); */
 
-  const stats = [
-    { label: 'Total Activités', value: activities.length, color: 'from-orange-500 to-amber-500', icon: Activity },
-    { label: 'Connexions', value: activities.filter(a => a.type === 'login').length, color: 'from-green-500 to-emerald-500', icon: LogIn },
-    { label: 'Modifications', value: activities.filter(a => a.type === 'update').length, color: 'from-blue-500 to-cyan-500', icon: Edit2 },
-    { label: 'Suppressions', value: activities.filter(a => a.type === 'delete').length, color: 'from-red-500 to-rose-500', icon: Trash2 },
+  // Stats dynamiques
+  const dynamicStats = [
+    { label: 'Total Activités', value: stats.total_activities, color: 'from-orange-500 to-amber-500', icon: Activity },
+    { label: 'Connexions', value: stats.connexions, color: 'from-green-500 to-emerald-500', icon: LogIn },
+    { label: 'Modifications', value: stats.modifications, color: 'from-blue-500 to-cyan-500', icon: Edit2 },
+    { label: 'Suppressions', value: stats.suppressions, color: 'from-red-500 to-rose-500', icon: Trash2 },
   ];
+
+  // État pour la pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Calcul de la pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = activities.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(activities.length / itemsPerPage);
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
 
   const exportToCSV = () => {
     console.log('Export des activités en CSV...');
   };
+
+
+  /// - Fonction useEffect pour charger les données directement sur les pages
+  useEffect(() => {
+    // Vérifier si l'utilisateur est connecté lors du chargement de l'application
+    dispatch(checkAuthenticate());
+    if (!isAuthenticated) {
+      /// - Redirection vers login
+      navigate(myroutes.login);
+    }
+
+    /// - Charger les fonctions
+    fetchStatistiques();
+    fetchActivities();
+  }, [dispatch, isAuthenticated, navigate, token, searchTerm, filterDate, filterType]);
 
   return (
     <AppLayout>
@@ -128,22 +208,26 @@ const ActivityPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div key={index} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center`}>
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      {loadingStats ? (
+          <>Chargement des statistiques...</>
+        ) : (
+            dynamicStats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center`}>
+                      <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</p>
+                      <p className="text-xs sm:text-sm text-gray-500">{stat.label}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <p className="text-xs sm:text-sm text-gray-500">{stat.label}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })
+          )}
       </div>
 
       {/* Filters */}
@@ -165,14 +249,22 @@ const ActivityPage = () => {
               onChange={(e) => setFilterDate(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
-              {dateFilters.map(filter => (
-                <option key={filter.value} value={filter.value}>{filter.label}</option>
-              ))}
+              <option value="today">Aujourd'hui</option>
+              <option value="week">Cette semaine</option>
+              <option value="month">Ce mois</option>
+              <option value="all">Tout</option>
             </select>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {activityTypes.map((type) => {
+          {[
+              { value: 'all', label: 'Toutes', icon: Activity },
+              { value: 'login', label: 'Connexions', icon: LogIn },
+              { value: 'create', label: 'Créations', icon: UserPlus },
+              { value: 'update', label: 'Modifications', icon: Edit2 },
+              { value: 'delete', label: 'Suppressions', icon: Trash2 },
+              { value: 'export', label: 'Exports', icon: Download },
+            ].map((type) => {
               const Icon = type.icon;
               return (
                 <button
@@ -195,65 +287,94 @@ const ActivityPage = () => {
 
       {/* Activities List */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase">Utilisateur</th>
-                <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase">Action</th>
-                <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Détails</th>
-                <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Date & Heure</th>
-                <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase hidden xl:table-cell">IP</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredActivities.map((activity) => {
-                const Icon = getActivityIcon(activity.type);
-                const colorClass = getActivityColor(activity.type);
-                return (
-                  <tr key={activity.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 sm:px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                          {activity.user.charAt(0)}
+      {loading ? (
+          <div className="text-center py-12">Chargement des activités...</div>
+        ) : activities.length === 0 ? (
+          <div className="text-center py-12">
+            <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Aucune activité trouvée</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Utilisateur</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Action</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Détails</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden md:table-cell">Date & Heure</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden xl:table-cell">IP</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {currentItems.map((activity) => {
+                  const Icon = getActivityIcon(activity.type);
+                  const colorClass = getActivityColor(activity.type);
+                  const userName = activity.user ? `${activity.user.last_name?.toUpperCase()} ${activity.user.first_name}` : 'Système';
+                  const email = activity.user?.email || '';
+
+                  return (
+                    <tr key={activity.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 sm:px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white font-semibold">
+                            {userName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 text-sm">{userName}</p>
+                            <p className="text-xs text-gray-500">{email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-gray-900 text-sm">{activity.user}</p>
-                          <p className="text-xs text-gray-500">{activity.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4">
-                      <div className="flex items-center gap-2">
+                      </td>
+                      <td className="px-4 sm:px-6 py-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${colorClass}`}>
                           <Icon className="w-3 h-3" />
                           {activity.action}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 hidden lg:table-cell">
-                      <p className="text-sm text-gray-600 max-w-md">{activity.details}</p>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 hidden md:table-cell">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        {activity.timestamp}
-                      </div>
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 hidden xl:table-cell">
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">{activity.ip}</code>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600">{activity.details}</td>
+                      <td className="px-4 sm:px-6 py-4 hidden md:table-cell">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="w-4 h-4" />
+                          {new Date(activity.timestamp).toLocaleString('fr-FR')}
+                        </div>
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 hidden xl:table-cell">
+                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">{activity.ip_address || 'N/A'}</code>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-        {filteredActivities.length === 0 && (
-          <div className="text-center py-12">
-            <Activity className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Aucune activité trouvée</p>
+        {/* Contrôles de pagination */}
+        {!loading && activities.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 border-t border-gray-200 text-sm">
+            <div className="text-gray-700 mb-2 sm:mb-0">
+              Affichage de {indexOfFirstItem + 1} à {Math.min(indexOfLastItem, activities.length)} sur {activities.length}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Précédent
+              </button>
+              <span className="px-3 py-1">
+                Page {currentPage} sur {totalPages}
+              </span>
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Suivant
+              </button>
+            </div>
           </div>
         )}
       </div>
