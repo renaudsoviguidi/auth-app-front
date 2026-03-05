@@ -1,116 +1,194 @@
-import React from 'react';
-import { Activity, FileText, LayoutDashboard, LogOut, Settings, Shield, Users, XCircle } from 'lucide-react';
-import { myroutes } from '../../../routes/routes';
-import { useNavigate } from 'react-router-dom';
-
+import React from "react";
+import {
+  Activity,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  Shield,
+  Users,
+  XCircle,
+} from "lucide-react";
+import { myroutes } from "../../../routes/routes";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import AuthService from "../../../services/AuthService";
+import Swal from "sweetalert2";
+import { resetAuthData } from "../../../app/providers/authSlice";
 
 const AppSideBar = ({ sidebarOpen, setSidebarOpen }) => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  //const isAuthenticated = useSelector((state) => state.auth.isAuthenticate);
+  const roles = useSelector((state) => state.auth.roles);
+  const user = useSelector((state) => state.auth.user);
+  //const auth = useSelector((state) => state.auth);
+  const token = useSelector((state) => state.auth.token);
 
-    const handleLogout = () => {
-        console.log('Déconnexion...');
-    };
+  const dispatch = useDispatch();
 
-    const handleMenuClick = (path) => {
-        navigate(path);
-        if (window.innerWidth < 1024) {
-          setSidebarOpen(false);
-        }
-    };
+  const logoutRequest = async (token) => {
+  try {
+    const response = await AuthService.logout(token);
+    return response;
+  } catch (error) {
+    console.log(error.message);
+  }
+};
 
-    const menuItems = [
-        { id: 'dashboard', label: 'Tableau de bord', icon: LayoutDashboard, path: myroutes.dashboard },
-        { id: 'users', label: 'Utilisateurs', icon: Users, path: myroutes.index_users },
-        { id: 'roles', label: 'Rôles & Permissions', icon: Shield, path: myroutes.index_roles },
-        { id: 'activity', label: 'Activité', icon: Activity, path: myroutes.activity },
-        { id: 'reports', label: 'Rapports', icon: FileText, path: myroutes.reports },
-        { id: 'settings', label: 'Paramètres', icon: Settings, path: myroutes.settings }
-    ];
+  const handleLogout = () => {
+    Swal.fire({
+      icon: "question",
+      text: "Voulez-vous vraiment vous déconnecter ? Cela terminera votre session actuelle.",
+      showCancelButton: true,
+      cancelButtonText: "Annuler",
+      confirmButtonText: "Oui ",
+      confirmButtonColor: "red",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logoutRequest(token);
+        dispatch(resetAuthData());
+        navigate(myroutes.login);
+        Swal.fire({
+          icon: "success",
+          text: "Vous vous êtes déconnecté avec succès",
+          toast: true,
+          position: "top",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          background: "green",
+          color: "white",
+          iconColor: "white",
+        });
+      }
+    });
+  };
 
-    const user = {
-        name: 'Admin User',
-        email: 'admin@example.com',
-        role: 'Administrateur',
-        avatar: null
-    };
+  const handleMenuClick = (path) => {
+    navigate(path);
+    if (window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
+  };
 
-    return (
-        <div>
-            {/* Overlay pour mobile */}
-            {sidebarOpen && (
-                <div 
-                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                onClick={() => setSidebarOpen(false)}
-                />
-            )}
+  const menuItems = [
+    {
+      id: "dashboard",
+      label: "Tableau de bord",
+      icon: LayoutDashboard,
+      path: myroutes.dashboard,
+    },
+    {
+      id: "users",
+      label: "Utilisateurs",
+      icon: Users,
+      path: myroutes.index_users,
+    },
+    {
+      id: "roles",
+      label: "Rôles & Permissions",
+      icon: Shield,
+      path: myroutes.index_roles,
+    },
+    {
+      id: "activity",
+      label: "Activité",
+      icon: Activity,
+      path: myroutes.activity,
+    },
+    /* { id: 'reports', label: 'Rapports', icon: FileText, path: myroutes.reports }, */
+    {
+      id: "settings",
+      label: "Paramètres",
+      icon: Settings,
+      path: myroutes.settings,
+    },
+  ];
 
-            {/* Sidebar */}
-            <aside className={`
+  return (
+    <div>
+      {/* Overlay pour mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
                 fixed inset-y-0 left-0 z-50
-                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+                ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
                 w-64 bg-white border-r border-gray-200 
                 transition-transform duration-300 ease-in-out
                 flex flex-col
-            `}>
-                {/* Logo */}
-                <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="font-bold text-gray-900">AuthSystem</span>
-                </div>
-                <button
-                    onClick={() => setSidebarOpen(false)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
-                >
-                    <XCircle className="w-5 h-5" />
-                </button>
-                </div>
-
-                {/* Navigation */}
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {menuItems.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    return (
-                    <button
-                        key={item.id}
-                        onClick={() => handleMenuClick(item.path)}
-                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                        isActive
-                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg'
-                            : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-medium">{item.label}</span>
-                    </button>
-                    );
-                })}
-                </nav>
-
-                {/* User Profile */}
-                <div className="p-4 border-t border-gray-200">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white font-semibold">
-                    {user.name.charAt(0)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 truncate">{user.name}</p>
-                    <p className="text-sm text-gray-500 truncate">{user.role}</p>
-                    </div>
-                </div>
-                <button
-                    onClick={handleLogout}
-                    className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                    <LogOut className="w-4 h-4" />
-                    <span className="text-sm font-medium">Déconnexion</span>
-                </button>
-                </div>
-            </aside>
+            `}
+      >
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-gray-900">AuthSystem</span>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+          >
+            <XCircle className="w-5 h-5" />
+          </button>
         </div>
-    );
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleMenuClick(item.path)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  isActive
+                    ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* User Profile */}
+        <div className="p-4 border-t border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white font-semibold">
+              {user?.first_name?.charAt(0)}
+              {user?.last_name?.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-gray-900 truncate">
+                {user.first_name} {user.last_name}
+              </p>
+              <p className="text-sm text-gray-500 truncate">
+                {roles.join(" • ")}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="text-sm font-medium">Déconnexion</span>
+          </button>
+        </div>
+      </aside>
+    </div>
+  );
 };
-export default AppSideBar
+export default AppSideBar;

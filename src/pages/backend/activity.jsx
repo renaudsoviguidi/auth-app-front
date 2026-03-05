@@ -77,24 +77,6 @@ const ActivityPage = () => {
   }
 
   const [activities, setActivities] = useState([]);
-/* 
-  const activityTypes = [
-    { value: 'all', label: 'Toutes les activités', icon: Activity },
-    { value: 'login', label: 'Connexions', icon: LogIn },
-    { value: 'logout', label: 'Déconnexions', icon: LogOut },
-    { value: 'create', label: 'Créations', icon: UserPlus },
-    { value: 'update', label: 'Modifications', icon: Edit2 },
-    { value: 'delete', label: 'Suppressions', icon: UserMinus },
-    { value: 'view', label: 'Consultations', icon: Eye },
-    { value: 'system', label: 'Système', icon: Settings },
-  ];
-
-  const dateFilters = [
-    { value: 'today', label: 'Aujourd\'hui' },
-    { value: 'week', label: 'Cette semaine' },
-    { value: 'month', label: 'Ce mois' },
-    { value: 'all', label: 'Tout' },
-  ]; */
 
   // Icônes et couleurs
   const getActivityIcon = (type) => {
@@ -127,14 +109,6 @@ const ActivityPage = () => {
     return colors[type] || 'bg-gray-100 text-gray-700';
   };
 
-  /* const filteredActivities = activities.filter(activity => {
-    const matchesSearch = activity.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         activity.details.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || activity.type === filterType;
-    return matchesSearch && matchesType;
-  }); */
-
   // Stats dynamiques
   const dynamicStats = [
     { label: 'Total Activités', value: stats.total_activities, color: 'from-orange-500 to-amber-500', icon: Activity },
@@ -163,8 +137,33 @@ const ActivityPage = () => {
   };
 
 
-  const exportToCSV = () => {
-    console.log('Export des activités en CSV...');
+  const exportToCSV = async () => {
+    try {
+      setLoading(true);
+
+      const response = await ActivitiesService.export_to_excel(token, {
+        responseType: 'blob',
+      });
+
+      //console.log(response);
+      if (response.data.success) {
+        // Création du lien de téléchargement
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'activities.xlsx'); // nom du fichier
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+          setActivities(response.data.data);
+      }
+
+  } catch (error) {
+      console.error("Erreur chargement activités:", error);
+  } finally {
+      setLoading(false);
+  }
   };
 
 

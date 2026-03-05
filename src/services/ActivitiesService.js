@@ -13,6 +13,12 @@ class ActivitiesService {
             headers: { Authorization: `Bearer ${token}` },
         });
     }
+
+    export_to_excel(token) {
+        return http.get("/api/v01/web/activities/export_excel", {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    }
 }
 
 export default new ActivitiesService

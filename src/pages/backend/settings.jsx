@@ -20,33 +20,24 @@ const SettingsPage = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   
   const [settings, setSettings] = useState({
-    // Général
-    siteName: 'AuthSystem',
-    siteDescription: 'Système de gestion d\'authentification et d\'autorisation',
+    site_name: 'AuthSystem',
+    site_description: '',
     language: 'fr',
     timezone: 'Africa/Porto-Novo',
-    
-    // Notifications
-    emailNotifications: true,
-    loginAlerts: true,
-    weeklyReport: false,
-    securityAlerts: true,
-    
-    // Sécurité
-    twoFactorAuth: false,
-    sessionTimeout: '30',
-    passwordExpiration: '90',
-    maxLoginAttempts: '5',
-    
-    // Apparence
+    email_notifications: true,
+    login_alerts: true,
+    weekly_report: false,
+    security_alerts: true,
+    two_factor_auth: false,
+    session_timeout: '30',
+    password_expiration: '90',
+    max_login_attempts: '5',
     theme: 'light',
-    primaryColor: '#f97316',
-    
-    // Email
-    smtpHost: 'smtp.example.com',
-    smtpPort: '587',
-    smtpUser: 'noreply@example.com',
-    smtpPassword: '',
+    primary_color: '#f97316',
+    smtp_host: '',
+    smtp_port: '587',
+    smtp_user: '',
+    smtp_password: '',
   });
 
   const handleInputChange = (field, value) => {

@@ -1,14 +1,11 @@
 import React from "react";
 import { Bell, Menu, Search } from 'lucide-react';
+import { useSelector } from "react-redux";
 
 
 const AppHeader = ({ sidebarOpen, setSidebarOpen }) => {
-    const user = {
-        name: 'Admin User',
-        email: 'admin@example.com',
-        role: 'Administrateur',
-        avatar: null
-    };
+    const user = useSelector((state) => state.auth.user);
+
 
     return (
         <div>
@@ -30,7 +27,7 @@ const AppHeader = ({ sidebarOpen, setSidebarOpen }) => {
                 </button>
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Tableau de bord</h1>
-                    <p className="text-sm text-gray-600 mt-1 hidden sm:block">Bienvenue, {user.name}</p>
+                    <p className="text-sm text-gray-600 mt-1 hidden sm:block">Bienvenue, {user.first_name} {user.last_name}</p>
                 </div>
                 </div>
                 

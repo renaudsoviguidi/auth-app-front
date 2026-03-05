@@ -15,8 +15,14 @@ import HabilitationsPage from '../pages/backend/habilitations';
 import ActivityPage from '../pages/backend/activity';
 import RapportsPage from '../pages/backend/rapports';
 import SettingsPage from '../pages/backend/settings';
+import { useSelector } from 'react-redux';
 
 const Webroute = () => {
+  const roles = useSelector((state) => state.auth.roles);
+    
+  const role_habilitation = useSelector((state) => state.auth.habilitations);
+
+  console.log("Roles et habilitations : ", roles, role_habilitation);
   return (
    <BrowserRouter>
     <Routes>

@@ -24,6 +24,10 @@ class AuthService {
     resetPassword(data) {
         return http.post("/api/v01/web/password-reset/confirm/", data);   
     }
+    
+    logout(data) {
+        return http.post("/api/v01/web/logout",  data,{ headers: { 'Authorization': 'Bearer '+data } })
+    }
 }
 
 export default new AuthService

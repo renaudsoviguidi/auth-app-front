@@ -1,8 +1,8 @@
 export const myroutes = {
-  homepage: "/",
+  homepage: "/homapage",
 
   /// - Authentification
-  login: "/auth/login",
+  login: "/",
   register: "/auth/register",
   codeopt: "/auth/code_otp",
   forgot_password: "/auth/forgot-password",
